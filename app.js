@@ -34,9 +34,20 @@ async function refresh() {
     res.rows.forEach(row => {
         const {desc,value,recordType,date} = row.doc;
         const li = document.createElement('li');
-        li.textContent = `${date} - ${desc} : R${value.toFixed(2)} - (${recordType})`;
+        li.textContent = `${date} - ${desc} : R$ ${value.toFixed(2)} - (${recordType})`;
         list.appendChild(li);
+
+        if (recordType === 'Income'){
+            totalG += value;
+            if (date === today) totalD += value;            
+        } else {
+            totalG -= value;
+            if (date === today) totalD -= value;            
+        }
                 
     });
+
+    totalD.textContent = `r$ ${totalD.toFixed(2)}`;
+    total.textContent = `r$ ${totalG.toFixed(2)}`;
 
 }
