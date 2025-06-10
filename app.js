@@ -1,13 +1,16 @@
 const db = new PouchDB('Finances');
 const form = document.getElementById('RecordForm');
-const list = document.getElementById('RecordList');
-const TotalDaily = document.getElementById('DailySum');
-const Total = document.getElementById('TotalSum');
-const today = new Date().toISOString().slice(0,10);
+const list = document.getElementById('RecordsList');
+const totalDaily = document.getElementById('DailySum');
+const total = document.getElementById('TotalSum');
+const today = new Date().toISOString().slice(0, 10);
+
+if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sq.js');
+}
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const desc = document.getElementById('Description').value;
     const value = parseFloat(document.getElementById('Value').value);
     const recordType = document.getElementById('Type').value;
@@ -15,39 +18,39 @@ form.addEventListener('submit', async (e) => {
 
     const doc = {
         _id: new Date().toISOString(),
-        desc,value,recordType,date
-
+        desc, value, recordType, date
     };
 
     await db.put(doc);
     form.reset();
     refresh();
-}
-);
+});
+
 
 async function refresh() {
     const res = await db.allDocs({include_docs: true, descending: true});
     list.innerHTML = '';
     let totalD = 0;
     let totalG = 0;
-    
+
     res.rows.forEach(row => {
-        const {desc,value,recordType,date} = row.doc;
+        const { desc, value, recordType, date} = row.doc;
         const li = document.createElement('li');
         li.textContent = `${date} - ${desc} : R$ ${value.toFixed(2)} - (${recordType})`;
         list.appendChild(li);
 
-        if (recordType === 'Income'){
+        if (recordType === 'Income') {
             totalG += value;
-            if (date === today) totalD += value;            
-        } else {
+            if (date === today) totalD += value;
+          } else {
             totalG -= value;
-            if (date === today) totalD -= value;            
-        }
-                
-    });
-
-    totalD.textContent = `r$ ${totalD.toFixed(2)}`;
-    total.textContent = `r$ ${totalG.toFixed(2)}`;
+            if (date === today) totalD -= value;
+          }
+        });
+      
+    totalDaily.textContent = `R$ ${totalD.toFixed(2)}`;
+    total.textContent = `R$ ${totalG.toFixed(2)}`;
 
 }
+
+refresh();
